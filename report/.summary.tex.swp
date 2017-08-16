@@ -1,5 +1,0 @@
-\section{Summary}
-\subsection{The Problem}
-Maersk being a big corporation has a lot of ongoing transactions all around the globe. Having many subsidiaries that are not in sync, they remotley pull the data and do modifications (that are subject to human error) over it, such that the full information of a transaction is split amongst the databases (Excell spreadsheets) of different smaller organisations. 
-\\
-When submiting a tax report in a country X, the data set $D=\{T_1,...,T_n\}$, where $T_i$ represents one transaction; must be concatenated from subsidiares $S=\{S_1,...,S_n\}$. Because of poorly storage of data, and human mistake, some countries dismiss the tax information as being not valid, and thus appling sanctions. 
