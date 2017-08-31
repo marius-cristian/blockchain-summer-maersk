@@ -1,0 +1,12 @@
+\begin{thebibliography}{1}
+
+\bibitem{maersk} Maersk - https://en.wikipedia.org/wiki/Maersk
+\bibitem{hashgraph}"THE SWIRLDS HASHGRAPH CONSENSUS ALGORITHM:
+FAIR, FAST, BYZANTINE FAULT TOLERANCE" by
+LEEMON BAIRD - http://www.swirlds.com/downloads/SWIRLDS-TR-2016-01.pdf
+\bibitem{timewindow} "A Sliding Window Algorithm for Relational
+Frequent Patterns Mining from Data Streams" by Fabio Fumarola, Anna Ciampi, Annalisa Appice, Donato Malerba - http://www.di.uniba.it/~appice/publications/DS09b.pdf
+\bibitem{yellow}"ETHEREUM: A SECURE DECENTRALISED GENERALISED TRANSACTION LEDGER" by DR. GAVIN WOOD http://gavwood.com/paper.pdf
+\bibitem{gas}https://github.com/ethereum/go-ethereum/wiki/Gas-Price-Oracle
+\bibitem{ethgas} http://ethgasstation.info/
+\end{thebibliography}

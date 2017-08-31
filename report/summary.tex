@@ -1,13 +1,42 @@
-\section{Summary}
-\subsection{The Problem}
-Maersk being a big corporation has a lot of ongoing transactions all around the globe. Having many subsidiaries that are not in sync, they remotley pull the data and do modifications (that are subject to human error) over it, such that the full information of a transaction is split amongst the databases (Excell spreadsheets) of different smaller organisations. 
+\section{The problem}
+\href{http://www.maersk.com}{A.P. Moller - Maersk} and it's subsidiaries deal with a large amount of transactions across multiple countries each days. Governments usually have different tax policies and sanctions towards (unintentional) tax fraud (such as omitted data or human error).\\
+Currently the accounting is split amongst subsidiaries, and even if subsidiary $S_1$ initiaties a transaction, subsidiary $S_2$ can add extra acounting information that might be needed or not when submitting a tax report in country $C_1$.\\
 \\
-When submiting a tax report in a country X, the data set $D=\{T_1,...,T_n\}$, where $T_i$ represents one transaction; must be concatenated from subsidiares $S=\{S_1,...,S_n\}$, where $T_i$ is split amongst any subset of $S$. Because of poorly storage of data, and human mistake, some countries dismiss the tax information as being not valid, and thus applying sanctions.\\
-We will define the initial state of a Transaction:\\
-initiator; value; receiver; initiator country; receiver country;\\
-Later in time different subsidiarys should be able to add more data to it.
+At the current state the handling of data is done manually in Excell for each subsidiary, and uses an Enterprise Resource Planning (ERP) system to keep track of everything. This process takes time, and for example in Spain the time interval for submitting the monthly tax report is four days, in Romania, they need to check the validity of the reports submitted by tracking the history of how the data was modified over time (wich is not possible in the current system and thus sanctions are applied). Even more at any point in time, any governamental entity can perform a check of all the reports submitted in an interval up to five or ten years and needs to track how they were modified. Another obstacle is that, this data should not be visible to everybody, such that two subsidiaries should not be able to access or modify all of the data, just the one that is intended to.\\
 \\
-The tax authorithy needs to be assured that the data is not corrupted, or manipulated. 
+\subsection{The flow}
+Let $t$ denote one transaction and it's data (such as sender, value, receiver, sender\_country, receiver\_country, currency...)\\ 
+Let $S=\{S_0,S_1,...\}$ the set of subsidiaries (we can treat them as different databases), where $S_i$ contains either all of a transactions data, or partial data.\\
+Let $T_i=\{(t_i,S_{j},S_{j+1},S_{j+2},...)\}$ be the mapping of a transaction $t_i$ over the subsidiaries that contains data related to it.\\ 
+Let $C=\{C_0,C_1,C_2...\}$ be the set of countries in which tax report must be filled in.\\
+Let $T_{C_i}=\{T_0, T_1,...\}$ be the set of transactions that need to be submited for a ceratain country $C_i$ in order to pay tax.\\
 \\
-How can we ensure that when the data is modified the state (transaction) is still valid?\\
-A proposed solution would be to have a shared database, where each modification of an entry (a transactions data) has to be validated by each subsidiary in order to ensure correctness from their point of view.
+The flow of a transaction record in the current system:\\
+First a transaction $t_0$ is registered by subsidiary $S_0$, $T_0=\{(t_0,S_0)\}$ will be present in the ERP. This initial state should be always immutable. $S_1$ adds extra data fields to $t_0$, for example $extra\_charges,\ country$ that concatenates extra expenses. The ERP will now contain $T_0=\{(t_0,S_0,S_1)\}$. Let's assume that $S_2$ needs to pay the tax for the current cumulative value of $t_0$, therefore it will make a request to ERP, and ERP will provide the transaction data from $S_0$ and from $S_1$ and submit it to the country $C_1's$ tax authority. ERP will mark $t_0$ as paid. If $S_4$ wants to add extra charges, or a bank fee, or alter the data for overpaying it, this will be added in the ERP after the moment of transaction such that $T_0=\{(t_0,S_0,S_1,S_4)\}$. But the tax is already marked as paid, and the extra modification might be considered tax evasion.\\
+Because the data is not immutable, mistakes are sometimes made, and data might disappear; let's take the case of accidental deletion of $t_0$ in $S_0$ (an employee of subsidiary 0 deletes the Excel row containing the transaction), now when the tax authority does the validation, the missing data can be considered as tax evasion.\\
+\\
+The flow is exemplified in the following graph
+\begin{center}
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,
+                    thick,main node/.style={circle,draw,font=\sffamily\Large\bfseries}]
+
+  \node[main node] (1) {ERP};
+  \node[main node] (2) [above left of=1] {$S_0$};
+  \node[main node] (3) [below left of=1] {$S_2$};
+  \node[main node] (4) [above right of=1] {$S_1$};
+  \node[main node] (5) [above left of=3] {$C_0$};
+
+  \path[every node/.style={font=\sffamily\small}]
+    (1) edge node [left] {$T_0$} (3)
+    	edge node [left] {} (4)
+    (2) edge node [right] {$t_0$} (1)
+    (3) edge node [left] {$T_0$} (5)
+    (4) edge node [right] {$t_0'$} (1);
+    
+\node[align=center,font=\bfseries, yshift=2em] (title) 
+    at (current bounding box.north)
+    {Figure 1};
+
+\end{tikzpicture}
+
+\end{center}

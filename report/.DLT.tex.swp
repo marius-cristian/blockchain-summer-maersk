@@ -1,0 +1,119 @@
+\section{Distributed Ledger solution}
+In this chapter we will explore a distributed ledger technology (DLT) approach, that tries to enchance the centralised solution, and solve some of its weaknesses but maintain the strenghts.\\
+\begin{center}
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,
+                    thick,main node/.style={circle,draw,font=\sffamily\Large\bfseries}]
+
+  \node[main node] (1) {ERP};
+  \node[main node] (2) [above left of=1] {$C_0$};
+  \node[main node] (3) [below left of=1] {$C_1$};
+  \node[main node] (4) [above right of=1] {$C_2$};
+  \node[main node] (5) [below right of=1] {$C_3$};
+  \node[main node] (6) [above left of=2] {$S_0$};
+  \node[main node] (7) [below left of=2] {$S_1$};
+  \node[main node] (8) [above right of=2] {$S_2$};
+  \node[main node] (9) [below left of=3] {$S_3$};
+  \node[main node] (10) [below right of=3] {$S_4$};
+  \node[main node] (11) [below right of=5] {$S_5$};
+  \node[main node] (12) [above right of=5] {$S_6$};
+  \node[main node] (13) [above right of=4] {$S_7$};
+
+  \path[every node/.style={font=\sffamily\small}]
+    (1) edge node {} (2)
+    	edge node {} (3)
+    	edge node {} (4)
+    	edge node {} (5)
+    	edge node {} (7)
+    	edge node {} (8)
+    	edge node {} (10)
+    	edge node {} (12)
+    (6) edge node {} (2)
+    	edge node {} (7)
+    	edge node {} (8)
+    (7) edge node {} (6)
+    	edge node {} (2)
+    	edge node {} (3)
+    	edge node {} (9)
+    	edge [bend right] node {} (8)
+    	edge [bend left] node {} (10)
+    (3) edge node {} (7)
+    (8) edge node {} (6)
+    	edge node {} (2)
+    	edge [bend left] node {} (7)
+    	edge [bend right] node {} (12)
+    (9) edge node {} (10)
+    	edge node {} (7)
+    	edge node {} (3)
+    (10)edge node {} (3)
+    	edge node {} (9)
+    	edge node {} (11)
+    	edge [bend right] node {} (7)
+    	edge [bend left] node {} (12)
+    	edge node {} (5)
+    (5) edge node {} (11)
+    	edge node {} (10)
+    	edge node {} (12)
+    (12)edge node {} (5)
+    	edge [bend left] node {} (8)
+    	edge [bend right] node {} (10)
+    	edge node {} (4)
+    	edge node {} (13)
+    	edge node {} (11)
+    (11)edge node {} (12)	
+    (4) edge node {} (12)
+    	edge node {} (13)
+    	edge node {} (8)
+    (13)edge node {} (4)
+    	edge node {} (8)
+    	edge node {} (12)		
+    (2) edge node [right] {$P_{C_0 key}$} (1)
+    	edge node {} (6)
+    	edge node {} (7)
+    	edge node {} (8)
+    (3) edge node [left] {$P_{C_1 key}$} (1)
+    (4) edge node [right] {$P_{C_2 key}$} (1)
+    (5) edge node [left] {$P_{C_3 key}$} (1);
+    
+\node[align=center,font=\bfseries, yshift=2em] (title) 
+    at (current bounding box.north)
+    {Figure 2 - DLT Flow};
+
+\end{tikzpicture}
+
+\end{center}
+\subsection{The Flow}
+The problem is modeled as a graph of fully connected subgraphs. There are 4 types of nodes: a Permission node, Regulator nodes, Super nodes and Normal nodes. Each subraph uses a distributed ledger for storing data, and the graph to emit events in the form of hashes of the data.\\
+\\
+The Permission node: Represents the permission authority, that indicates what data is restricted to other nodes. The permission node is connected to all of the Regulator nodes and Super nodes, such that it can broadcast policy updates into the network. To ensure that the Regulator nodes are trusted, verified, and do not try to access data that is prohibited to them, the Permission node certifies them with a cryptographic key that is used to gain read access just to the data that is strictly under their authority. In Figure 2, the permission node is markes as "ERP"\\
+\\
+Regulator nodes: Represented by the tax autorithy in each country. In the network they are the center of each cluster of fully connected graphs, and are connected to every type of node (except Regulator nodes, as the current design does not explore sharing data between governments, it would be a nice future study case). Their role is to check and agree on the validity of the data, thus they represent an important part in the consensus mechanism, and are considered as trusted supervisors. If they get corrupt, data leakages are at risk. Because the corporate entity does not trust the Regulator nodes, it is up to the Super nodes to supervise them, provide fault detection (to some extent) against such entities and expose them. The Regulator and the Super nodes represent the core of this design flow. In Figure 2, the Regulator nodes are: $\{C_0,C_1,C_2,C_3\}$.\\
+\\
+Super nodes: Represented by the subsidiaries that have to report to more than one tax authority (we can think of them as "Border Subsidiaries" that deal with transactions across multiple countries). They represent the bridges between fully connected graphs, and they are connected to the Permission node, any number of Regulator nodes, and \textbf{all} of the nodes (normal or super) in each fully connected graph. For example if a super node $S$ is part of $C_0$ and $C_1$'s graph, them being fully connected graphs, then by definition $S$ is connected to every node in those graphs. In Figure 2, the Super nodes are: $\{S_1, S_2, S_6, S_4\}$ A super node has 3 propreties:\\
+1) A super node broadcasts the policy updates and permissions of the ERP to the other nodes (such that each normal node "hears" the policy that takes effect over it);\\
+2) Any 2 super nodes that share a common tax authority can contest any sanctions (with proof) on the tax authorities side.\\
+3) A super node may become a normal node and vice versa.\\
+\\
+Normal nodes: Represented by the subsidiaries that only deal with transactions in a single country. Thus only report to a single authority. They keep a distributed ledger with permissions (replicated database), whos state is shared in a peer-to-peer network only between the nodes that are part of it's current fully connected graph. In Figure 2 the normal nodes are $\{S_0,S_3,S_7,S_5\}$.\\
+\subsection{The consensus}
+A detailed technical solution of the consensus is presented in Leemon Bairds paper\cite{hashgraph}.\\
+\\
+Let $G$ be the network graph, and $G_{C_i}$ a fully connected subgraph of G, that revolves arround Regulator node $C_i$. There is a distributed ledger for each subgraph $G_{C_i}$ in the graph, and the role of the subgraph is to ensure that every member knows every event.\\
+The first type of consensus is the one that validates each transaction and modification of it. The regulator keeps an updated copy of the networks "ledger" (in this case not reffering to the database, but the signatures history), and is also part in the \textbf{virtual voting} (as presented in "The Swirlds Hashgraph Consensus Algorithm" - Chapter 4\cite{hashgraph}) process of which modification is considered valid, and which is considered suspicious. By being part of this process, and having access to the data, and it's history we solve the validity and traceability problems.\\
+The second consensus, is the one that validates the trust of a tax authority. The super nodes that are connected to $C_i$ can agree that the only transactions that are related to that tax authority's concern are stored in $G_{C_i}$, the tax autorithy's Permission key is up-to-date, and that in the vecinity of $C_i$'s network there are no other transactions stored that concern that authority.\\
+In case of a policy broadcast conflict the super nodes can agree on which one to adopt. \\
+\\
+From a corporate point of view, it might be a problem to store data on the tax authority, therefore the Regulator node does not keep a data-storage with the actual transaction data, it can just request temporary access. The regulator node keeps track of what events are emited in the network (in the form of hash signatures) that can be verified and traced back on the data.\\
+\\
+Example:\\
+Subsidiaries A, B and C operate in France. A, B and C share a distributed ledger, and the France tax authority and A, B and C form a graph in which they emit events. If A writes a transaction all members get a copy of it, but for example if A notifies B first, and B notifies C after, this will be recorded in the graph in an ordered way, such that the information can be chronologically traced to each node and inconsistencies (A notifies B with a transaction and C with a different one) can be debunked.
+
+\subsection{Bundles of transactions}
+Managing and broadcasting bundles of transactions becomes more easy than in the centralised perspective as the volume gets distributed across the subnetworks, and even if a subnetwork has to manage a relatively high amount they just broadcast the modifications applied to each transaction. The data is immutable and to get from one state to another every modification is actually an addition of data, even if a cost is deducted, it will be represented as a tuple of the form ("TIMESTAMP", "TRANSACTION ID", "DEDUCTION", "SUBSIDIARY\_SIGNATURE"). Even if the data is not fully synchronised, the deduction can be represented in functional form, for example as a percentage of the total price for that state or an explicit value.\\
+If disputes appear (two subsidiaries that modify the same transaction get in conflict) they can request a handshake and settle the dispute without delaying the whole network.\\
+Policies such as a sliding time window\cite{timewindow} can be enforced between the subsidiaries such that this conflicts are avoided.
+
+\subsection{Conclusions}
+To answer the questions posed by Chapter 3.4, the super nodes guarantee flexibility between subsidiaries. If a subsidiary is out of the system, the other nodes already share the same state in the ledger, know it's history, and to whom it emited events. If a super node leaves the system, another node will take it's responsability and become a super node. Because of the permission node, access to data can be restricted, and the flow remains hermetic.\\
+Even with a big volume of transactions, it is kept "locally" between the entities that actually need it, without involving the central authority, thus there will be no major bottlenecks when it comes to synchronising the data.\\
+Even if the tax authority is part of the system, and can do live checks, it might still not trust the data, and aruge that not all of the transactions are reported, as they can only see and track the ones that they have access to.
+
